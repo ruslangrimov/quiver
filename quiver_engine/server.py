@@ -28,7 +28,7 @@ from quiver_engine.vis_utils import save_layer_outputs
 
 
 def get_app(model, classes, top, html_base_dir, temp_folder='./tmp', input_folder='./',
-            mean=None, std=None):
+            mean=None, std=None, custom_load_img=None):
     '''
     The base of the Flask application to be run
     :param model: the model to show
@@ -41,6 +41,7 @@ def get_app(model, classes, top, html_base_dir, temp_folder='./tmp', input_folde
     :param input_folder: the image directory for the raw data
     :param mean: list of float mean values
     :param std: lost of float std values
+    :param custom_load_img: custom function for image loading
     :return:
     '''
 
@@ -96,6 +97,8 @@ def get_app(model, classes, top, html_base_dir, temp_folder='./tmp', input_folde
     def get_layer_outputs(layer_name, input_path):
         return jsonify(
             save_layer_outputs(
+                custom_load_img(abspath(input_folder), input_path) 
+                if custom_load_img else    
                 load_img(
                     join(abspath(input_folder), input_path),
                     single_input_shape,
@@ -137,7 +140,8 @@ def run_app(app, port=5000):
 
 
 def launch(model, classes=None, top=5, temp_folder='./tmp', input_folder='./',
-           port=5000, html_base_dir=None, mean=None, std=None):
+           port=5000, html_base_dir=None, mean=None, std=None,
+           custom_load_img=None):
     if platform.system() is 'Windows':
         temp_folder = '.\\tmp'
         os.system('mkdir %s' % temp_folder)
@@ -154,7 +158,8 @@ def launch(model, classes=None, top=5, temp_folder='./tmp', input_folder='./',
             html_base_dir=html_base_dir,
             temp_folder=temp_folder,
             input_folder=input_folder,
-            mean=mean, std=std
+            mean=mean, std=std,
+            custom_load_img=custom_load_img
         ),
         port
     )
